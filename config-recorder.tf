@@ -1,5 +1,7 @@
+data "aws_region" "current" {}
+
 resource "aws_iam_role" "config" {
-  name = "aws-config-role"
+  name = "aws-config-role-${data.aws_region.current.name}"
   tags = "${var.input_tags}"
 
   assume_role_policy = <<POLICY
@@ -38,7 +40,7 @@ resource "aws_config_delivery_channel" "config" {
   name           = "aws-config-delivery-channel"
   s3_bucket_name = "${var.log_bucket_id}"
   s3_key_prefix  = "config"
-  sns_topic_arn  = "${var.sns_topic_arn}"
+  sns_topic_arn  = "${aws_sns_topic.aws_config_stream.arn}"
 
   snapshot_delivery_properties {
     delivery_frequency = "${var.snapshot_delivery_frequency}"
@@ -52,4 +54,9 @@ resource "aws_config_configuration_recorder_status" "config" {
   is_enabled = true
 
   depends_on = ["aws_config_delivery_channel.config"]
+}
+
+resource "aws_sns_topic" "aws_config_stream" {
+  name = "aws-config-stream-${data.aws_region.current.name}"
+  tags = "${var.input_tags}"
 }

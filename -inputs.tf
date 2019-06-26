@@ -31,9 +31,3 @@ variable "snapshot_delivery_frequency" {
   type = "string"
   default = "Three_Hours"
 }
-
-variable "sns_topic_arn" {
-  description = "ARN for sns alarm to be targeted for performance alerts"
-  type = "string"
-  default = ""
-}
