@@ -1,5 +1,5 @@
 resource "aws_iam_role" "config" {
-  name = "${var.name_prefix}-aws-config-role${var.name_suffix}"
+  name = "aws-config-role"
   tags = "${var.input_tags}"
 
   assume_role_policy = <<POLICY
@@ -25,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "config" {
 }
 
 resource "aws_config_configuration_recorder" "config" {
-  name     = "${var.name_prefix}-aws-config-recorder${var.name_suffix}"
+  name     = "aws-config-recorder"
   role_arn = "${aws_iam_role.config.arn}"
 
   recording_group {
@@ -35,9 +35,9 @@ resource "aws_config_configuration_recorder" "config" {
 }
 
 resource "aws_config_delivery_channel" "config" {
-  name           = "${var.name_prefix}-aws-config-delivery${var.name_suffix}"
+  name           = "aws-config-delivery-channel"
   s3_bucket_name = "${var.log_bucket_id}"
-  s3_key_prefix  = "aws-config/${var.name_prefix}-aws-config${var.name_suffix}"
+  s3_key_prefix  = "config"
   sns_topic_arn  = "${var.sns_topic_arn}"
 
   snapshot_delivery_properties {
