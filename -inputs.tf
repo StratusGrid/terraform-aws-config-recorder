@@ -31,3 +31,9 @@ variable "snapshot_delivery_frequency" {
   type = "string"
   default = "Three_Hours"
 }
+
+variable "include_global_resource_types" {
+  description = "True/False to add global resources to config. Default is false"
+  type = "string"
+  default = false
+}
