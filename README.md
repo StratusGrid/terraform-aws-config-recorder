@@ -16,28 +16,53 @@ module "aws_config_recorder" {
 ### Multi-Region Usage:
 For this, we will configure Recorder in multiple regions by passing in providers blocks.
 
-In providers tf file:
+Example of multiple additional aliased providers in providers tf file:
 ```
-#Extra Providers for Config and other Multi-Region configurations
+provider "aws" {
+  allowed_account_ids = "${var.account_numbers}"
+  region              = "${var.region}"
+  access_key = "${var.access_key}"
+  secret_key = "${var.secret_key}"
+  token      = "${var.token}"
+}
+
+#Extra Providers for Config and other Multi-Region configurations like AWS Config
 provider "aws" {
   alias  = "us-east-1"
   region = "us-east-1"
+  allowed_account_ids = "${var.account_numbers}"
+  access_key = "${var.access_key}"
+  secret_key = "${var.secret_key}"
+  token      = "${var.token}"
 }
 
 provider "aws" {
   alias  = "us-east-2"
   region = "us-east-2"
+  allowed_account_ids = "${var.account_numbers}"
+  access_key = "${var.access_key}"
+  secret_key = "${var.secret_key}"
+  token      = "${var.token}"
 }
 
 provider "aws" {
   alias  = "us-west-1"
   region = "us-west-1"
+  allowed_account_ids = "${var.account_numbers}"
+  access_key = "${var.access_key}"
+  secret_key = "${var.secret_key}"
+  token      = "${var.token}"
 }
 
 provider "aws" {
   alias  = "us-west-2"
   region = "us-west-2"
+  allowed_account_ids = "${var.account_numbers}"
+  access_key = "${var.access_key}"
+  secret_key = "${var.secret_key}"
+  token      = "${var.token}"
 }
+
 ```
 
 In config recorder tf file:
