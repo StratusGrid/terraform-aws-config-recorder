@@ -14,7 +14,7 @@
 
 variable "input_tags" {
   description = "Map of tags to apply to resources"
-  type = "map"
+  type        = map
   default = {
     Developer   = "StratusGrid"
     Provisioner = "Terraform"
@@ -23,17 +23,17 @@ variable "input_tags" {
 
 variable "log_bucket_id" {
   description = "ID of bucket to log config change snapshots to"
-  type = "string"
+  type        = string
 }
 
 variable "snapshot_delivery_frequency" {
   description = "Frequency which AWS Config snapshots the configuration"
-  type = "string"
-  default = "Three_Hours"
+  type        = string
+  default     = "Three_Hours"
 }
 
 variable "include_global_resource_types" {
   description = "True/False to add global resources to config. Default is false"
-  type = "string"
-  default = false
+  type        = string
+  default     = false
 }
