@@ -2,7 +2,7 @@ data "aws_region" "current" {}
 
 resource "aws_iam_role" "config" {
   name = "aws-config-role-${data.aws_region.current.name}"
-  tags = var.input_tags
+  tags = local.common_tags
 
   assume_role_policy = <<POLICY
 {
@@ -58,5 +58,5 @@ resource "aws_config_configuration_recorder_status" "config" {
 
 resource "aws_sns_topic" "aws_config_stream" {
   name = "aws-config-stream-${data.aws_region.current.name}"
-  tags = var.input_tags
+  tags = local.common_tags
 }
