@@ -1,5 +1,9 @@
 data "aws_region" "current" {}
 
+data "aws_kms_key" "sns_default" {
+  key_id = "alias/aws/sns"
+}
+
 resource "aws_iam_role" "config" {
   name = "aws-config-role-${data.aws_region.current.name}"
   tags = local.common_tags
@@ -58,5 +62,6 @@ resource "aws_config_configuration_recorder_status" "config" {
 
 resource "aws_sns_topic" "aws_config_stream" {
   name = "aws-config-stream-${data.aws_region.current.name}"
+  kms_master_key_id = data.aws_kms_key.sns_default.id
   tags = local.common_tags
 }
