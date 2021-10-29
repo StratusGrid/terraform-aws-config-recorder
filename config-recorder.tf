@@ -69,3 +69,49 @@ resource "aws_sns_topic" "aws_config_stream" {
   kms_master_key_id = local.sns_kms_key_id
   tags              = local.common_tags
 }
+
+data "aws_iam_policy_document" "config_sns" {
+  statement {
+    actions = [
+      "sns:Publish",
+    ]
+    principals {
+      identifiers = [
+        "config.amazonaws.com",
+      ]
+      type = "Service"
+    }
+    resources = [
+      aws_sns_topic.aws_config_stream.arn,
+    ]
+    sid = "ConfigSNSPolicy"
+  }
+  statement {
+    actions = [
+      "sns:Publish",
+    ]
+    condition {
+      test = "Bool"
+      values = [
+        "false",
+      ]
+      variable = "aws:SecureTransport"
+    }
+    effect = "Deny"
+    principals {
+      identifiers = [
+        "*",
+      ]
+      type = "AWS"
+    }
+    resources = [
+      aws_sns_topic.aws_config_stream.arn,
+    ]
+    sid = "DenyUnsecuredTransport"
+  }
+}
+
+resource "aws_sns_topic_policy" "config" {
+  arn    = aws_sns_topic.aws_config_stream.arn
+  policy = data.aws_iam_policy_document.config_sns.json
+}
