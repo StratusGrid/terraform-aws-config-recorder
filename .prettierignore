@@ -1,0 +1,5 @@
+/sops
+README.md
+.terraform
+/.config
+/workflow-config
