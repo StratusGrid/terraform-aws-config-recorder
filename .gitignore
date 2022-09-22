@@ -43,3 +43,6 @@ override.tf.json
 # IntelliJ
 .idea/workspace.xml
 .idea
+
+.pre-commit-config.yaml
+.prettierignore
