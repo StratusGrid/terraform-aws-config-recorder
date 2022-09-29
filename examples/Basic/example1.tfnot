@@ -1,0 +1,12 @@
+### Basic Usage
+
+# Configures config recorder and SNS Topic for an AWS account's region. Requires that you already have a bucket configured for it.
+# Valid Recording Frequency Options can be found here: https://docs.aws.amazon.com/config/latest/APIReference/API_ConfigSnapshotDeliveryProperties.html#API_ConfigSnapshotDeliveryProperties_Contents
+
+# Module Instantiation
+module "aws_config_recorder" {
+  source = "StratusGrid/config-recorder/aws"
+  version = "1.0.1"
+  log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
+  include_global_resource_types = true
+}
