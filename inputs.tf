@@ -37,3 +37,9 @@ variable "include_global_resource_types" {
   type        = string
   default     = false
 }
+
+variable "sns_kms_key_id" {
+  description = "KMS key id for encrypting cloudtrail config recorder stream sns topic. If left empty uses SNS default AWS managed key."
+  type        = string
+  default     = ""
+}

@@ -1,5 +1,13 @@
 data "aws_region" "current" {}
 
+data "aws_kms_key" "sns_default" {
+  key_id = "alias/aws/sns"
+}
+
+locals {
+  sns_kms_key_id = var.sns_kms_key_id != "" ? var.sns_kms_key_id : data.aws_kms_key.sns_default.id
+}
+
 resource "aws_iam_role" "config" {
   name = "aws-config-role-${data.aws_region.current.name}"
   tags = local.common_tags
@@ -58,7 +66,53 @@ resource "aws_config_configuration_recorder_status" "config" {
 
 #tfsec:ignore:aws-sns-enable-topic-encryption -- Ignores error on Turning on SNS Topic encryption.
 resource "aws_sns_topic" "aws_config_stream" {
-  #kms_master_key_id = "/Add-one" # Uncomment this line to encryot the SNS message by providing the encryption key
-  name = "aws-config-stream-${data.aws_region.current.name}"
-  tags = local.common_tags
+  name              = "aws-config-stream-${data.aws_region.current.name}"
+  kms_master_key_id = local.sns_kms_key_id
+  tags              = local.common_tags
+}
+
+data "aws_iam_policy_document" "config_sns" {
+  statement {
+    actions = [
+      "sns:Publish",
+    ]
+    principals {
+      identifiers = [
+        "config.amazonaws.com",
+      ]
+      type = "Service"
+    }
+    resources = [
+      aws_sns_topic.aws_config_stream.arn,
+    ]
+    sid = "ConfigSNSPolicy"
+  }
+  statement {
+    actions = [
+      "sns:Publish",
+    ]
+    condition {
+      test = "Bool"
+      values = [
+        "false",
+      ]
+      variable = "aws:SecureTransport"
+    }
+    effect = "Deny"
+    principals {
+      identifiers = [
+        "*",
+      ]
+      type = "AWS"
+    }
+    resources = [
+      aws_sns_topic.aws_config_stream.arn,
+    ]
+    sid = "DenyUnsecuredTransport"
+  }
+}
+
+resource "aws_sns_topic_policy" "config" {
+  arn    = aws_sns_topic.aws_config_stream.arn
+  policy = data.aws_iam_policy_document.config_sns.json
 }

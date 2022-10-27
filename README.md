@@ -128,6 +128,7 @@ module "aws_config_recorder_us_west_2" {
 | [aws_iam_role.config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_sns_topic.aws_config_stream](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
+| [aws_sns_topic_policy.config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 
 ## Inputs
 
@@ -137,12 +138,14 @@ module "aws_config_recorder_us_west_2" {
 | <a name="input_input_tags"></a> [input\_tags](#input\_input\_tags) | Map of tags to apply to resources | `map(any)` | <pre>{<br>  "Developer": "StratusGrid",<br>  "Provisioner": "Terraform"<br>}</pre> | no |
 | <a name="input_log_bucket_id"></a> [log\_bucket\_id](#input\_log\_bucket\_id) | ID of bucket to log config change snapshots to | `string` | n/a | yes |
 | <a name="input_snapshot_delivery_frequency"></a> [snapshot\_delivery\_frequency](#input\_snapshot\_delivery\_frequency) | Frequency which AWS Config snapshots the configuration | `string` | `"Three_Hours"` | no |
+| <a name="input_sns_kms_key_id"></a> [sns\_kms\_key\_id](#input\_sns\_kms\_key\_id) | KMS key id for encrypting cloudtrail config recorder stream sns topic. If left empty uses SNS default AWS managed key. | `string` | `""` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_aws_config_configuration_recorder_id"></a> [aws\_config\_configuration\_recorder\_id](#output\_aws\_config\_configuration\_recorder\_id) | ID of configuration recorder |
+| <a name="output_sns_encryption_kms_key_id"></a> [sns\_encryption\_kms\_key\_id](#output\_sns\_encryption\_kms\_key\_id) | Id of key used to encrypt sns topic |
 
 ---
 
