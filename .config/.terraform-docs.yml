@@ -1,0 +1,50 @@
+version: ""
+
+formatter: markdown table
+
+name: terraform-aws-config-recorder
+
+content: |-
+  # terraform-aws-config-recorder
+
+  GitHub: [StratusGrid/terraform-aws-config-recorder](https://github.com/StratusGrid/terraform-aws-config-recorder)
+
+  This module configures config recorder for an AWS account.
+
+  ## Examples
+
+  ```hcl
+  {{ include "examples/Basic/example1.tfnot" }}
+  ```
+  
+  ```hcl
+  {{ include "examples/Multi-Region/example1.tfnot" }}
+  ```
+  ---
+
+  {{ .Requirements }}
+
+  {{ .Resources }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}
+
+  ---
+
+  Note, manual changes to the README will be overwritten when the documentation is updated. To update the documentation, run `terraform-docs -c .config/.terraform-docs.yml`
+
+sections:
+  show:
+    - requirements
+    - resources
+    - inputs
+    - outputs
+
+sort:
+  enabled: true
+  by: name
+
+output:
+  file: README.md
+  mode: replace

@@ -64,6 +64,7 @@ resource "aws_config_configuration_recorder_status" "config" {
   depends_on = [aws_config_delivery_channel.config]
 }
 
+#tfsec:ignore:aws-sns-enable-topic-encryption -- Ignores error on Turning on SNS Topic encryption.
 resource "aws_sns_topic" "aws_config_stream" {
   name              = "aws-config-stream-${data.aws_region.current.name}"
   kms_master_key_id = local.sns_kms_key_id
