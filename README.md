@@ -1,14 +1,25 @@
 <!-- BEGIN_TF_DOCS -->
-# terraform-aws-config-recorder
+<p align="center">                                                                                                                                            
+                                                                                
+  <img src="https://github.com/StratusGrid/terraform-readme-template/blob/main/header/stratusgrid-logo-smaller.jpg?raw=true" />
+  <p align="center">                                                           
+    <a href="https://stratusgrid.com/book-a-consultation">Contact Us</a> |                  
+    <a href="https://stratusgrid.com/cloud-cost-optimization-dashboard">Stratusphere FinOps</a> |
+    <a href="https://stratusgrid.com">StratusGrid Home</a> |
+    <a href="https://stratusgrid.com/blog">Blog</a>
+  </p>                    
+</p>
 
-GitHub: [StratusGrid/terraform-aws-config-recorder](https://github.com/StratusGrid/terraform-aws-config-recorder)
+ # terraform-aws-config-recorder
 
-This module configures config recorder for an AWS account.
+ GitHub: [StratusGrid/terraform-aws-config-recorder](https://github.com/StratusGrid/terraform-aws-config-recorder)
 
-## Examples
+ This module configures config recorder for an AWS account.
 
-```hcl
-### Basic Usage
+ ## Examples
+
+ ```hcl
+ ### Basic Usage
 
 # Configures config recorder and SNS Topic for an AWS account's region. Requires that you already have a bucket configured for it.
 # Valid Recording Frequency Options can be found here: https://docs.aws.amazon.com/config/latest/APIReference/API_ConfigSnapshotDeliveryProperties.html#API_ConfigSnapshotDeliveryProperties_Contents
@@ -20,10 +31,10 @@ module "aws_config_recorder" {
   log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
   include_global_resource_types = true
 }
-```
-
-```hcl
-### Multi-Regional Usage
+ ```
+ 
+ ```hcl
+ ### Multi-Regional Usage
 # For this, Recorder will be configured in multiple regions by passing in providers blocks.
 
 # Example of multiple additional aliased providers to be stored in providers.tf file:
@@ -109,17 +120,17 @@ module "aws_config_recorder_us_west_2" {
     aws = "aws.us-west-2"
   }
 }
-```
----
+ ```
+ ---
 
-## Requirements
+ ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.63 |
 
-## Resources
+ ## Resources
 
 | Name | Type |
 |------|------|
@@ -131,7 +142,7 @@ module "aws_config_recorder_us_west_2" {
 | [aws_sns_topic.aws_config_stream](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) | resource |
 | [aws_sns_topic_policy.config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 
-## Inputs
+ ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -141,14 +152,14 @@ module "aws_config_recorder_us_west_2" {
 | <a name="input_snapshot_delivery_frequency"></a> [snapshot\_delivery\_frequency](#input\_snapshot\_delivery\_frequency) | Frequency which AWS Config snapshots the configuration | `string` | `"Three_Hours"` | no |
 | <a name="input_sns_kms_key_id"></a> [sns\_kms\_key\_id](#input\_sns\_kms\_key\_id) | KMS key id for encrypting cloudtrail config recorder stream sns topic. If left empty uses SNS default AWS managed key. | `string` | `""` | no |
 
-## Outputs
+ ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_aws_config_configuration_recorder_id"></a> [aws\_config\_configuration\_recorder\_id](#output\_aws\_config\_configuration\_recorder\_id) | ID of configuration recorder |
 | <a name="output_sns_encryption_kms_key_id"></a> [sns\_encryption\_kms\_key\_id](#output\_sns\_encryption\_kms\_key\_id) | Id of key used to encrypt sns topic |
 
----
+ ---
 
-Note, manual changes to the README will be overwritten when the documentation is updated. To update the documentation, run `terraform-docs -c .config/.terraform-docs.yml`
+ Note, manual changes to the README will be overwritten when the documentation is updated. To update the documentation, run `terraform-docs -c .config/.terraform-docs.yml`
 <!-- END_TF_DOCS -->
