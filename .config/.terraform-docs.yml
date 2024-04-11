@@ -1,3 +1,5 @@
+header-from: ./.config/header.md
+
 version: ""
 
 formatter: markdown table
@@ -5,6 +7,8 @@ formatter: markdown table
 name: terraform-aws-config-recorder
 
 content: |-
+ {{ .Header }}
+
   # terraform-aws-config-recorder
 
   GitHub: [StratusGrid/terraform-aws-config-recorder](https://github.com/StratusGrid/terraform-aws-config-recorder)
@@ -36,6 +40,7 @@ content: |-
 
 sections:
   show:
+    - header
     - requirements
     - resources
     - inputs
