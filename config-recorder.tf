@@ -161,8 +161,35 @@ resource "aws_sns_topic_subscription" "this" {
 
 }
 
+######################
+# CONFIG AGGREGATOR
+######################
 
+resource "aws_config_configuration_aggregator" "this" {
+  # Create the aggregator in the global recorder region of the central AWS Config account.
+  count = var.is_global_recorder_region_and_account ? 1 : 0
+
+  name = "aws-config-aggregator-${data.aws_region.current.name}"
+
+  # Create normal account aggregation source
+  account_aggregation_source {
+    account_ids = var.source_collector_accounts
+    regions     = var.source_collector_all_regions == true ? null : var.source_collector_regions
+    all_regions = var.source_collector_all_regions
+  }
+
+}
+
+resource "aws_config_aggregate_authorization" "source" {
+  # This resource grants permission to the aggregator account to access AWS Config data from the source account.
+  # Enable it only in the source account, it's not needed for the aggregator account.
+  count = var.central_resource_collector_account != null ? 1 : 0
+
+  account_id = var.central_resource_collector_account
+  region     = var.global_resource_collector_region
+
+}
 locals {
-  # Conditionally create a map of subscribers if the topic is created
+  # Conditionally create a map of subscribers if the SNS topic is created
   conditional_subscribers = var.create_sns_topic ? { for key, value in var.subscribers : key => value } : {}
 }

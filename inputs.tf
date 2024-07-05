@@ -12,6 +12,11 @@
 #   default = ""
 # }
 
+variable "central_resource_collector_account" {
+  description = "The account ID of a central account that will aggregate AWS Config from other accounts"
+  type        = string
+  default     = null
+}
 variable "create_iam_role" {
   description = "Flag to indicate whether an IAM Role should be created to grant the proper permissions for AWS Config"
   type        = bool
@@ -58,11 +63,21 @@ variable "input_tags" {
   }
 }
 
+variable "is_global_recorder_region_and_account" {
+  description = "Flag to indicate whether this is the aggregator account and region"
+  type        = bool
+  default     = false
+}
+
 variable "log_bucket_id" {
   description = "ID of bucket to log config change snapshots to"
   type        = string
 }
-
+variable "global_resource_collector_region" {
+  description = "The region that collects AWS Config data"
+  type        = string
+  default     = null
+}
 variable "recording_mode" {
   description = <<-DOC
     The mode for AWS Config to record configuration changes. 
@@ -130,6 +145,22 @@ variable "sns_kms_key_id" {
   description = "KMS key id for encrypting cloudtrail config recorder stream sns topic. If left empty uses SNS default AWS managed key."
   type        = string
   default     = ""
+}
+
+variable "source_collector_accounts" {
+  description = "The account IDs of other accounts that will send their AWS Configuration to this account"
+  type        = set(string)
+  default     = null
+}
+variable "source_collector_all_regions" {
+  description = "Flag to indicate whether all regions are included for the source collector"
+  type        = bool
+  default     = false
+}
+variable "source_collector_regions" {
+  description = "A list of regions for the source collector to use"
+  type        = list(string)
+  default     = []
 }
 
 variable "subscribers" {
