@@ -36,6 +36,25 @@ resource "aws_iam_role_policy_attachment" "config" {
   role       = aws_iam_role.config[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
+resource "aws_iam_role_policy_attachment" "config_sns" {
+  count      = var.create_iam_role && var.create_sns_topic ? 1 : 0
+  provider   = aws
+  role       = aws_iam_role.config[0].name
+  policy_arn = data.aws_iam_policy_document.config_sns_policy
+}
+
+data "aws_iam_policy_document" "config_sns_policy" {
+  count = var.create_iam_role && var.create_sns_topic ? 1 : 0
+
+  statement {
+    sid       = "ConfigSNS"
+    effect    = "Allow"
+    resources = [aws_sns_topic.aws_config_stream[0].arn]
+    actions = [
+      "sns:Publish"
+    ]
+  }
+}
 
 resource "aws_config_configuration_recorder" "config" {
   name = "aws-config-recorder"
