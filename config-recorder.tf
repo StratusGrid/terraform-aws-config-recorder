@@ -8,6 +8,9 @@ locals {
   sns_kms_key_id = var.sns_kms_key_id != "" ? var.sns_kms_key_id : data.aws_kms_key.sns_default.id
 }
 
+######################
+# IAM ROLE
+######################
 data "aws_iam_policy_document" "assume_role" {
   count = var.create_iam_role ? 1 : 0
   statement {
@@ -36,13 +39,10 @@ resource "aws_iam_role_policy_attachment" "config" {
   role       = aws_iam_role.config[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
-resource "aws_iam_role_policy_attachment" "config_sns" {
-  count      = var.create_iam_role && var.create_sns_topic ? 1 : 0
-  provider   = aws
-  role       = aws_iam_role.config[0].name
-  policy_arn = data.aws_iam_policy_document.config_sns_policy
-}
 
+#######
+# SNS
+#######
 data "aws_iam_policy_document" "config_sns_policy" {
   count = var.create_iam_role && var.create_sns_topic ? 1 : 0
 
@@ -55,59 +55,16 @@ data "aws_iam_policy_document" "config_sns_policy" {
     ]
   }
 }
-
-resource "aws_config_configuration_recorder" "config" {
-  name = "aws-config-recorder"
-  # required argument, an arn of a valid role should be pass if the role is not created
-  role_arn = var.create_iam_role ? aws_iam_role.config[0].arn : var.iam_role_arn
-
-  recording_group {
-    all_supported                 = true
-    include_global_resource_types = var.include_global_resource_types
-  }
-
-  dynamic "recording_mode" {
-    for_each = var.recording_mode != null ? [1] : []
-    content {
-      recording_frequency = var.recording_mode.recording_frequency
-      dynamic "recording_mode_override" {
-        for_each = var.recording_mode.recording_mode_override != null ? [1] : []
-        content {
-          description         = var.recording_mode.recording_mode_override.description
-          resource_types      = var.recording_mode.recording_mode_override.resource_types
-          recording_frequency = var.recording_mode.recording_mode_override.recording_frequency
-        }
-      }
-    }
-  }
+resource "aws_iam_policy" "config_sns_policy" {
+  count       = var.create_iam_role && var.create_sns_topic ? 1 : 0
+  name        = "config_sns_policy"
+  description = "Allows AWS Config publish to the SNS topic"
+  policy      = data.aws_iam_policy_document.config_sns_policy[0].json
 }
-
-resource "aws_config_delivery_channel" "config" {
-  provider       = aws
-  name           = "aws-config-delivery-channel"
-  s3_bucket_name = var.log_bucket_id
-  # To maintain bakcward compatibility with the previous version
-  s3_key_prefix = var.s3_key_prefix != null ? var.s3_key_prefix : "config"
-  sns_topic_arn = var.create_sns_topic == true ? aws_sns_topic.aws_config_stream[0].arn : ""
-
-  dynamic "snapshot_delivery_properties" {
-    # To maintain bakcward compatibility with the previous version the default value of snapshot_delivery_frequency where leave as is
-    for_each = var.snapshot_delivery_frequency != null && var.snapshot_delivery_frequency != "" ? [1] : []
-
-    content {
-      delivery_frequency = var.snapshot_delivery_frequency
-    }
-
-  }
-
-  depends_on = [aws_config_configuration_recorder.config]
-}
-
-resource "aws_config_configuration_recorder_status" "config" {
-  name       = aws_config_configuration_recorder.config.name
-  is_enabled = true
-
-  depends_on = [aws_config_delivery_channel.config]
+resource "aws_iam_role_policy_attachment" "config_sns_policy" {
+  count      = var.create_iam_role && var.create_sns_topic ? 1 : 0
+  role       = aws_iam_role.config[0].name
+  policy_arn = aws_iam_policy.config_sns_policy[0].arn
 }
 
 #tfsec:ignore:aws-sns-enable-topic-encryption -- Ignores error on Turning on SNS Topic encryption.
@@ -179,6 +136,69 @@ resource "aws_sns_topic_subscription" "this" {
   raw_message_delivery   = lookup(each.value, "raw_message_delivery", false)
 
 }
+
+##########################
+# RECORDER
+##########################
+resource "aws_config_configuration_recorder" "config" {
+  name = "aws-config-recorder"
+  # required argument, an arn of a valid role should be pass if the role is not created
+  role_arn = var.create_iam_role ? aws_iam_role.config[0].arn : var.iam_role_arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = var.include_global_resource_types
+  }
+
+  dynamic "recording_mode" {
+    for_each = var.recording_mode != null ? [1] : []
+    content {
+      recording_frequency = var.recording_mode.recording_frequency
+      dynamic "recording_mode_override" {
+        for_each = var.recording_mode.recording_mode_override != null ? [1] : []
+        content {
+          description         = var.recording_mode.recording_mode_override.description
+          resource_types      = var.recording_mode.recording_mode_override.resource_types
+          recording_frequency = var.recording_mode.recording_mode_override.recording_frequency
+        }
+      }
+    }
+  }
+}
+
+##########################
+# DELIVERY CHANNEL
+##########################
+
+resource "aws_config_delivery_channel" "config" {
+  provider       = aws
+  name           = "aws-config-delivery-channel"
+  s3_bucket_name = var.log_bucket_id
+  # To maintain bakcward compatibility with the previous version
+  s3_key_prefix = var.s3_key_prefix != null ? var.s3_key_prefix : "config"
+  sns_topic_arn = var.create_sns_topic == true ? aws_sns_topic.aws_config_stream[0].arn : ""
+
+  dynamic "snapshot_delivery_properties" {
+    # To maintain bakcward compatibility with the previous version the default value of snapshot_delivery_frequency where leave as is
+    for_each = var.snapshot_delivery_frequency != null && var.snapshot_delivery_frequency != "" ? [1] : []
+
+    content {
+      delivery_frequency = var.snapshot_delivery_frequency
+    }
+
+  }
+
+  depends_on = [aws_config_configuration_recorder.config]
+}
+
+resource "aws_config_configuration_recorder_status" "config" {
+  name       = aws_config_configuration_recorder.config.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config]
+}
+
+
 
 ######################
 # CONFIG AGGREGATOR
