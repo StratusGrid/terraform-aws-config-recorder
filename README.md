@@ -18,24 +18,133 @@
 
  ## Examples
 
+ example 1
  ```hcl
  ### Basic Usage
 
-# Configures config recorder and SNS Topic for an AWS account's region. Requires that you already have a bucket configured for it.
+# Configures Config Recorder, IAM Role, and SNS Topic for an AWS account's region. Requires that you already have a bucket configured for it.
+# Recording strategy is the AWS default "Continuous"
+# It doesn't include global resources bacause `include_global_resource_types = false` by default
+# delivery_frequency was set by default to `Three_Hours`
+# s3_key_prefix was set by default to `config`
 # Valid Recording Frequency Options can be found here: https://docs.aws.amazon.com/config/latest/APIReference/API_ConfigSnapshotDeliveryProperties.html#API_ConfigSnapshotDeliveryProperties_Contents
 
 # Module Instantiation
 module "aws_config_recorder" {
-  source = "StratusGrid/config-recorder/aws"
-  version = "1.0.1"
-  log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
-  include_global_resource_types = true
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
+  # Set to true to create the iam role
+  create_iam_role = true
+
+  log_bucket_id = "aws-config-bucket-example"
+
 }
  ```
- 
+ ---
+ example 2
+ ```hcl
+ ### Set recorder, and aggregator of other accounts.
+
+# Configures Config Recorder, IAM Role, and SNS Topic for an AWS account's region. Requires that you already have a bucket configured for it.
+# Change recording_frequency to DAILY
+# Remove default s3_key_prefix
+# Add subscriber to the SNS Topic
+# change snapshot_delivery_frequency to TwentyFour_Hours
+# Valid Recording Frequency Options can be found here: https://docs.aws.amazon.com/config/latest/APIReference/API_ConfigSnapshotDeliveryProperties.html#API_ConfigSnapshotDeliveryProperties_Contents
+#
+# Create aggregator in this account and region
+# Set source accounts and region for the aggregator
+
+# Module Instantiation
+module "aws_config_recorder" {
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
+  # Set to true to create the iam role
+  create_iam_role = true
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Add suscribers to the SNS Topic
+  subscribers = {
+    email = {
+      protocol               = "email"
+      endpoint               = "example.2@stratusgrid.com"
+      endpoint_auto_confirms = true
+    }
+  }    
+
+  # Change default value to TwentyFour_Hours
+  snapshot_delivery_frequency = "TwentyFour_Hours"
+
+  # Create aggregator 
+  is_global_recorder_region_and_account = true
+  source_collector_accounts             = ["012345678901", "987654321098"]
+  source_collector_regions              = ["us-east-1", "us-west-2", "eu-central-1"]
+}
+ ```  
+ ---
+ example 3
+ ```hcl
+ ### Set recorder, and authorize aggregator of other accounts to get data
+
+# Configures Config Recorder for an AWS account's region. Requires that you already have a bucket configured for it.
+# Do not create IAM Role, instead pass an existing role ARN
+# Change recording_frequency to DAILY
+# Remove default s3_key_prefix
+# Disable the creation of SNS Topic
+# change snapshot_delivery_frequency to TwentyFour_Hours
+# Valid Recording Frequency Options can be found here: https://docs.aws.amazon.com/config/latest/APIReference/API_ConfigSnapshotDeliveryProperties.html#API_ConfigSnapshotDeliveryProperties_Contents
+#
+# Authorize aggregator account and region
+
+# Module Instantiation
+module "aws_config_recorder" {
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
+  # Set to false the creation of IAM Role and pass an existing Role arn
+  create_iam_role = false
+  iam_role_arn    = module.aws_config_recorder_us_east_1.aws_iam_role_config
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Disable SNS topic creation
+  create_sns_topic = false
+
+  # Change default value to TwentyFour_Hours
+  snapshot_delivery_frequency = "TwentyFour_Hours"
+
+  # Authorize aggregator account
+  central_resource_collector_account = "058264241281"
+  global_resource_collector_region   = "us-east-1"
+}
+ ```  
+
+ ---
+ example 4
  ```hcl
  ### Multi-Regional Usage
-# For this, Recorder will be configured in multiple regions by passing in providers blocks.
+# For this, Recorder will be configured in multiple regions by passing in providers blocks and creating and aggregator
+# Requires that you already have a bucket configured for it.
 
 # Example of multiple additional aliased providers to be stored in providers.tf file:
 provider "aws" {
@@ -85,40 +194,130 @@ provider "aws" {
 
 ## Module Instantiation
 module "aws_config_recorder_us_east_1" {
-  source = "StratusGrid/config-recorder/aws"
-  version = "1.0.1"
-  log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
-  include_global_resource_types = true #only include global resource on one region to prevent duplicate recording of events
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
   providers = {
-    aws = "aws.us-east-1"
+    aws = aws
   }
+
+  # Enable it in the region of the aggregator
+  include_global_resource_types = true
+
+  # Set to true to create the iam role
+  create_iam_role = true
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Default used is true, only leave in true for the aggregator account and region
+  create_sns_topic = true
+
+  # Create aggregator 
+  is_global_recorder_region_and_account = true
+  source_collector_accounts             = ["012345678901", "987654321098"]
+  source_collector_regions              = ["us-east-1", "us-west-2", "eu-central-1"]
+
 }
 
 module "aws_config_recorder_us_east_2" {
-  source = "StratusGrid/config-recorder/aws"
-  version = "1.0.1"
-  log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
-  providers = {
-    aws = "aws.us-east-2"
-  }
-}
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
 
-module "aws_config_recorder_us_west_1" {
-  source = "StratusGrid/config-recorder/aws"
-  version = "1.0.1"
-  log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
   providers = {
-    aws = "aws.us-west-1"
+    aws = aws.us-east-2
   }
+
+  # Set to false and pass existing IAM role
+  create_iam_role = false
+  iam_role_arn    = module.aws_config_recorder_us_east_1.aws_iam_role_config
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Default used is true, only leave in true for the aggregator account and region
+  # Only needed for the aggregator account and region
+  create_sns_topic = false
+
+  # Authorize aggregator account
+  central_resource_collector_account = "012345678901"
+  global_resource_collector_region   = "us-east-1"
 }
 
 module "aws_config_recorder_us_west_2" {
-  source = "StratusGrid/config-recorder/aws"
-  version = "1.0.1"
-  log_bucket_id = "${module.s3_bucket_logging.bucket_id}"
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
   providers = {
-    aws = "aws.us-west-2"
+    aws = aws.us-west-2
   }
+
+  # Set to false and pass existing IAM role
+  create_iam_role = false
+  iam_role_arn    = module.aws_config_recorder_us_east_1.aws_iam_role_config
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Default used is true, only leave in true for the aggregator account and region
+  # Only needed for the aggregator account and region
+  create_sns_topic = false
+
+  # Authorize aggregator account
+  central_resource_collector_account = "012345678901"
+  global_resource_collector_region   = "us-east-1"
+}
+
+module "aws_config_recorder_us_west_1" {
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
+  providers = {
+    aws = aws.us-west-1
+  }
+
+  # Set to false and pass existing IAM role
+  create_iam_role = false
+  iam_role_arn    = module.aws_config_recorder_us_east_1.aws_iam_role_config
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Default used is true, only leave in true for the aggregator account and region
+  # Only needed for the aggregator account and region
+  create_sns_topic = false
+
+  # Authorize aggregator account
+  central_resource_collector_account = "012345678901"
+  global_resource_collector_region   = "us-east-1"
 }
  ```
  ---

@@ -17,10 +17,23 @@ content: |-
 
   ## Examples
 
+  example 1
   ```hcl
   {{ include "examples/Basic/example1.tfnot" }}
   ```
-  
+  ---
+  example 2
+  ```hcl
+  {{ include "examples/Basic/example2.tfnot" }}
+  ```  
+  ---
+  example 3
+  ```hcl
+  {{ include "examples/Basic/example3.tfnot" }}
+  ```  
+
+  ---
+  example 4
   ```hcl
   {{ include "examples/Multi-Region/example1.tfnot" }}
   ```
