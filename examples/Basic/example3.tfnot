@@ -1,0 +1,41 @@
+### Set recorder, and authorize aggregator of other accounts to get data
+
+# Configures Config Recorder for an AWS account's region. Requires that you already have a bucket configured for it.
+# Do not create IAM Role, instead pass an existing role ARN
+# Change recording_frequency to DAILY
+# Remove default s3_key_prefix
+# Disable the creation of SNS Topic
+# change snapshot_delivery_frequency to TwentyFour_Hours
+# Valid Recording Frequency Options can be found here: https://docs.aws.amazon.com/config/latest/APIReference/API_ConfigSnapshotDeliveryProperties.html#API_ConfigSnapshotDeliveryProperties_Contents
+#
+# Authorize aggregator account and region
+
+# Module Instantiation
+module "aws_config_recorder" {
+  source  = "StratusGrid/config-recorder/aws"
+  # StratusGrid recommends pinning every module to a specific version
+  version = "x.x.x"
+
+  # Set to false the creation of IAM Role and pass an existing Role arn
+  create_iam_role = false
+  iam_role_arn    = module.aws_config_recorder_us_east_1.aws_iam_role_config
+
+  recording_mode = {
+    recording_frequency = "DAILY"
+  }
+
+  log_bucket_id = "aws-config-bucket-example"
+
+  # Default used by the module is "config", explicitly remove that default
+  s3_key_prefix = ""
+
+  # Disable SNS topic creation
+  create_sns_topic = false
+
+  # Change default value to TwentyFour_Hours
+  snapshot_delivery_frequency = "TwentyFour_Hours"
+
+  # Authorize aggregator account
+  central_resource_collector_account = "058264241281"
+  global_resource_collector_region   = "us-east-1"
+}

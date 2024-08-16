@@ -1,17 +1,3 @@
-### Commented out name_prefix and name_suffix since there can only be one config stream and you don't see the name anywhere
-### When you have names and the name changes, it requires manual intervention.
-
-# variable "name_prefix" {
-#   description = "String to prefix on object names"
-#   type = "string"
-# }
-
-# variable "name_suffix" {
-#   description = "String to append to object names. This is optional, so start with dash if using"
-#   type = "string"
-#   default = ""
-# }
-
 variable "central_resource_collector_account" {
   description = "The account ID of a central account that will aggregate AWS Config from other accounts"
   type        = string
